@@ -1,4 +1,4 @@
-# Architecture Guide
+# openclaw-finance — Architecture Guide
 
 ## Overview
 

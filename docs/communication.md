@@ -1,4 +1,4 @@
-# Communication Patterns & Safety Rules
+# openclaw-finance — Communication Patterns & Safety Rules
 
 ## Overview
 

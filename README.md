@@ -1,23 +1,41 @@
-# Financial Multi-Agent System
+<p align="center">
+  <h1 align="center">openclaw-finance</h1>
+  <p align="center">
+    <strong>Multi-agent financial research system built on OpenClaw</strong>
+  </p>
+  <p align="center">
+    <a href="https://openclaw.ai">OpenClaw</a> &middot;
+    <a href="docs/architecture.md">Architecture</a> &middot;
+    <a href="docs/communication.md">Communication</a> &middot;
+    <a href="#quick-start">Quick Start</a>
+  </p>
+  <p align="center">
+    <a href="#中文说明">中文</a> | <a href="#why-multi-agent">English</a>
+  </p>
+</p>
 
-A production-ready framework for building **multi-agent financial research systems** with [OpenClaw](https://openclaw.ai).
+---
 
-Clone, configure your API keys, and run — 4 specialized agents collaborate on financial research with built-in quality control.
+> **Production-tested.** This framework powers a 7-agent system running 24/7 on Telegram, handling real financial research across US and A-share markets.
+
+Clone. Configure API keys. Run. 4 specialized agents collaborate on financial research with built-in quality control — no single agent can match what a team delivers.
 
 ## Why Multi-Agent?
 
-Traditional financial research is linear and error-prone:
+Traditional financial research is linear. Information decays at each handoff:
 
 ```
 PM → Analyst → Programmer → Output
      ↑ Information decay at each step
 ```
 
-Multi-agent approach:
-- **Parallel processing**: Multiple specialists work simultaneously
-- **Built-in quality control**: A dedicated skeptic agent challenges assumptions
-- **Shared context**: All agents access the same knowledge base
-- **Traceable decisions**: Every step is logged and auditable
+**openclaw-finance** replaces this with parallel, self-validating agents:
+
+- **Parallel processing** — Multiple specialists work simultaneously
+- **Built-in quality control** — A dedicated skeptic challenges every assumption
+- **Shared context** — All agents access the same knowledge base in real-time
+- **Traceable decisions** — Every step is logged and auditable
+- **Self-healing** — Heartbeat monitoring auto-recovers failed agents
 
 ## Architecture
 
@@ -50,89 +68,89 @@ Multi-agent approach:
               └─────────────────┘
 ```
 
+### Key Design Decisions
+
+| Decision | Why |
+|----------|-----|
+| **Shared workspace** | Zero-latency knowledge sharing, no sync overhead |
+| **Per-agent identity** | Auth isolation + role clarity without file duplication |
+| **Bootstrap hooks** | Dynamic identity injection at startup |
+| **3-layer memory** | Auto-recall (LanceDB) + manual index (MEMORY.md) + daily logs |
+| **Staggered heartbeats** | Avoid thundering herd, 79-120min intervals |
+
+## Agent Roles
+
+| Agent | Role | What It Does |
+|-------|------|-------------|
+| **Coordinator** | Orchestrator | Decomposes requests, dispatches tasks, integrates results |
+| **Engineer** (x2) | Data & Backtest | Python/pandas pipelines, ETL, backtesting, load-balanced pair |
+| **Skeptic** | Quality Control | Bias detection, assumption challenging, statistical validation |
+| **Visualizer** | Reports & Charts | Matplotlib/Plotly charts, PDF/HTML reports, dashboards |
+
 ## Quick Start
 
 ### Prerequisites
 
 - [OpenClaw](https://openclaw.ai) installed (`npm i -g openclaw`)
-- At least one LLM provider API key (OpenAI, ZAI, Bailian, Ollama, etc.)
+- At least one LLM API key (OpenAI, Qwen, GLM, Ollama, etc.)
 
 ### 1. Clone & Configure
 
 ```bash
-git clone https://github.com/zhangsensen/financial-multi-agent-system.git
-cd financial-multi-agent-system
+git clone https://github.com/zhangsensen/openclaw-finance.git
+cd openclaw-finance
 
-# Copy example config
+# Copy example config and add your API keys
 cp examples/openclaw-config-example.json ~/.openclaw/openclaw.json
-
-# Edit with your API keys and model preferences
 vim ~/.openclaw/openclaw.json
 ```
 
 ### 2. Set Up Workspace
 
 ```bash
-# Run the setup script
 bash scripts/setup.sh /path/to/your/workspace
-
-# This creates:
-# /path/to/your/workspace/
-# ├── knowledge_hub/
-# ├── memory/
-# ├── AGENTS.md
-# ├── TOOLS.md
-# └── (per-agent dirs with IDENTITY.md + SOUL.md)
 ```
 
-### 3. Sync Bootstrap Files
+This creates the full workspace structure with agent identities, shared rules, and knowledge hub.
+
+### 3. Start
 
 ```bash
-# Sync shared rules to all agent workspaces
-bash scripts/sync-bootstrap.sh /path/to/your/workspace
-
-# After sync, restart gateway
 openclaw gateway restart
 ```
-
-### 4. Start Using
 
 Open Telegram, message your coordinator bot:
 
 > "Analyze AAPL with quality checks"
 
-The coordinator will automatically:
-1. Spawn Engineer → load price data
-2. Spawn Skeptic → prepare analysis checklist
-3. Engineer → calculate metrics
-4. Skeptic → validate results, check for biases
-5. Visualizer → generate report
+The system automatically:
+1. **Engineer** loads price data
+2. **Skeptic** prepares validation checklist
+3. **Engineer** calculates metrics
+4. **Skeptic** validates results (survivorship bias, look-ahead bias, etc.)
+5. **Visualizer** generates report
+6. **Coordinator** delivers integrated output
 
-## Agent Roles
+### Try the Demo Locally
 
-| Agent | Role | Specialty |
-|-------|------|-----------|
-| **Coordinator** | Task dispatch & integration | Orchestrates other agents, maintains project state |
-| **Engineer** (x2) | Data infrastructure | Python/pandas, backtesting, ETL pipelines |
-| **Skeptic** | Quality control | Challenge assumptions, bias detection, validation |
-| **Visualizer** | Reports & charts | Matplotlib/Plotly, PDF/HTML reports |
-
-See [`agents/`](agents/) for complete identity and behavior files.
+```bash
+cd examples/stock-analysis
+pip install pandas numpy
+python run_analysis.py --stock AAPL
+```
 
 ## Communication Patterns
 
-### Spawn (Task Delegation)
+### Spawn — Task Delegation
 ```javascript
-// Coordinator spawns engineer with isolated session
 sessions_spawn({
   agentId: "engineer",
   task: "Load and validate AAPL price data from 2023-01-01 to 2025-12-31"
 })
 ```
 
-### A2A Dialogue (Point-to-Point)
+### A2A — Point-to-Point Dialogue
 ```javascript
-// Skeptic questions engineer directly
 sessions_send({
   sessionKey: "agent:engineer:main",
   message: "Did you exclude stocks with insufficient trading days?",
@@ -140,78 +158,107 @@ sessions_send({
 })
 ```
 
-### Deadlock Prevention Rules
-1. **Never** call `sessions_send` inside an A2A conversation
-2. Only the initiator sends messages
-3. Respond with text, not another `sessions_send`
+### Safety Rules
+- Never call `sessions_send` inside an A2A conversation (causes deadlock)
+- Max 5 ping-pong rounds per dialogue
+- Respond with text, never with another `sessions_send`
 
-## Memory System (3 Layers)
+See [docs/communication.md](docs/communication.md) for complete patterns.
 
-| Layer | Mechanism | Purpose |
-|-------|-----------|---------|
-| **Auto-Recall** | LanceDB (vector + BM25) | Automatic context injection, zero manual effort |
-| **MEMORY.md** | Markdown file | Project index, hard constraints (<5000 chars) |
-| **Daily Notes** | `memory/YYYY-MM-DD.md` | Raw logs, auto-extracted by Layer 1 |
+## Memory System
 
-## Knowledge Hub
+| Layer | Mechanism | Effort |
+|-------|-----------|--------|
+| **Auto-Recall** | LanceDB vector + BM25 hybrid | Zero (automatic) |
+| **MEMORY.md** | Project index + hard rules | Low (manual, <5000 chars) |
+| **Daily Notes** | `memory/YYYY-MM-DD.md` | Medium (raw logs, auto-extracted) |
+
+## Project Structure
 
 ```
-knowledge_hub/
-├── agent_coordination/
-│   ├── AGENT_OUTPUT_SPEC.md    # Output standards for all agents
-│   └── PROJECT_STATE.json      # Current project status (coordinator-only writes)
-├── your_project/
-│   ├── MARKET_CONTEXT.md       # Market rules & data sources
-│   ├── data/                   # Shared data outputs
-│   └── reports/                # Generated reports
+openclaw-finance/
+├── agents/
+│   ├── coordinator/     # Orchestrator identity & rules
+│   ├── engineer/        # Data engineer identity & rules
+│   ├── skeptic/         # Quality controller identity & rules
+│   └── visualizer/      # Chart/report generator identity & rules
+├── knowledge_hub/
+│   ├── agent_coordination/   # Output specs + project state
+│   └── example_project/      # Template with MARKET_CONTEXT.md
+├── scripts/
+│   ├── setup.sh              # One-command workspace setup
+│   └── sync-bootstrap.sh     # Sync rules across agents
+├── examples/
+│   ├── openclaw-config-example.json
+│   └── stock-analysis/       # Runnable demo
+├── docs/
+│   ├── architecture.md       # Deep dive (EN + CN)
+│   └── communication.md      # A2A patterns & safety
+├── AGENTS.md                 # Shared behavioral rules
+├── TOOLS.md                  # Shared tool catalog
+└── LICENSE                   # MIT
 ```
 
-## What to Open Source vs Keep Private
+## Open Source Boundary
 
-| Open Source (Framework) | Keep Private (Strategy) |
+| Open Source (This Repo) | Keep Private (Your Work) |
 |------------------------|------------------------|
 | Agent collaboration patterns | Factor formulas |
 | Communication protocols | Strategy parameters |
 | Memory system design | Proprietary data sources |
 | Heartbeat monitoring | Alpha generation logic |
-| Generic templates | Trading signals |
+| Bootstrap templates | Trading signals |
 
-## Project Structure
+---
 
+## 中文说明
+
+### openclaw-finance 是什么？
+
+基于 [OpenClaw](https://openclaw.ai) 的**多 Agent 金融研究框架**。4 个专业 Agent 协作完成金融研究，内置质量控制。
+
+**已在生产环境验证** — 7 个 Agent 7x24 小时运行在 Telegram 上，覆盖美股和 A 股市场研究。
+
+### 核心设计
+
+- **共享工作区** — 所有 Agent 访问同一个知识库，零延迟
+- **身份隔离** — 每个 Agent 有独立的 IDENTITY.md 和 SOUL.md
+- **三层记忆** — 自动回忆（LanceDB）+ 手动索引（MEMORY.md）+ 每日笔记
+- **安全机制** — 心跳监控、死锁预防、配置文件锁定
+
+### Agent 分工
+
+| Agent | 角色 | 职责 |
+|-------|------|------|
+| **协调者** | 调度中心 | 任务分解、结果整合、健康监控 |
+| **工程师** (x2) | 数据基建 | Python 数据管道、回测引擎、ETL |
+| **质疑者** | 质量控制 | 挑战假设、偏差检测、统计验证 |
+| **可视化** | 报告图表 | Matplotlib/Plotly 图表、PDF/HTML 报告 |
+
+### 快速开始
+
+```bash
+git clone https://github.com/zhangsensen/openclaw-finance.git
+cd openclaw-finance
+cp examples/openclaw-config-example.json ~/.openclaw/openclaw.json
+# 编辑配置，填入你的 API key 和工作区路径
+bash scripts/setup.sh /path/to/your/workspace
+openclaw gateway restart
 ```
-.
-├── README.md
-├── agents/
-│   ├── coordinator/          # Chat agent (orchestrator)
-│   │   ├── IDENTITY.md
-│   │   └── SOUL.md
-│   ├── engineer/             # Code agent (data & backtest)
-│   │   ├── IDENTITY.md
-│   │   └── SOUL.md
-│   ├── skeptic/              # FirstPrinciple agent (validation)
-│   │   ├── IDENTITY.md
-│   │   └── SOUL.md
-│   └── visualizer/           # Vision agent (charts & reports)
-│       ├── IDENTITY.md
-│       └── SOUL.md
-├── knowledge_hub/
-│   ├── agent_coordination/
-│   │   ├── AGENT_OUTPUT_SPEC.md
-│   │   └── PROJECT_STATE.json
-│   └── example_project/
-│       └── MARKET_CONTEXT.md
-├── scripts/
-│   ├── setup.sh              # One-time workspace setup
-│   └── sync-bootstrap.sh     # Sync shared rules to all agents
-├── examples/
-│   └── openclaw-config-example.json
-├── docs/
-│   ├── architecture.md       # Detailed architecture (EN + CN)
-│   └── communication.md      # A2A patterns & safety rules
-├── AGENTS.md                 # Shared behavioral rules
-├── TOOLS.md                  # Shared tool catalog
-└── LICENSE
-```
+
+详细架构文档见 [docs/architecture.md](docs/architecture.md)（含完整中文版）。
+
+### 为什么多 Agent？
+
+传统金融研究是线性的，信息在传递中逐级衰减。多 Agent 方案实现**并行处理 + 内置质控 + 共享上下文 + 决策可追溯**。
+
+一个 Agent 做不到的事，一个团队可以。
+
+---
+
+## Contributing
+
+Issues and PRs welcome. Please keep the framework/strategy boundary — this repo is for the orchestration framework, not for trading strategies.
 
 ## License
 
@@ -219,6 +266,4 @@ MIT
 
 ## Credits
 
-Built with [OpenClaw](https://openclaw.ai) — the multi-agent orchestration platform.
-
-Community contributor: [@zhangsensen](https://github.com/zhangsensen)
+Built with [OpenClaw](https://openclaw.ai) | Author: [@zhangsensen](https://github.com/zhangsensen)
