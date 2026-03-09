@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "maintainer": "coordinator",
+  "note": "Only the coordinator agent can write to this file. All other agents have read-only access.",
+  "projects": {
+    "example_project": {
+      "status": "active",
+      "created": "2026-01-01T00:00:00Z",
+      "tasks": {
+        "total": 0,
+        "completed": 0,
+        "in_progress": 0,
+        "failed": 0
+      },
+      "agents": {
+        "engineer": { "tasks_completed": 0, "last_active": null },
+        "skeptic": { "tasks_completed": 0, "last_active": null },
+        "visualizer": { "tasks_completed": 0, "last_active": null }
+      }
+    }
+  }
+}

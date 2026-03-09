@@ -1,0 +1,118 @@
+{
+  "$schema": "https://openclaw.ai/config-schema.json",
+  "_comment": "Example OpenClaw config for Financial Multi-Agent System. Replace API keys and paths before use.",
+
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "your-provider/your-model"
+      },
+      "thinking": "high",
+      "timeout": 1800,
+      "maxConcurrent": 20,
+      "subagents": {
+        "allowAgents": ["*"],
+        "maxConcurrent": 20
+      }
+    },
+    "instances": [
+      {
+        "id": "coordinator",
+        "workspace": "/path/to/your/workspace",
+        "agentDir": "workspace",
+        "model": {
+          "primary": "your-provider/your-model",
+          "fallbacks": ["fallback-provider/fallback-model"]
+        },
+        "heartbeat": { "every": "90m" },
+        "subagents": { "allowAgents": ["*"] }
+      },
+      {
+        "id": "engineer",
+        "workspace": "/path/to/your/workspace",
+        "agentDir": "workspace-engineer",
+        "model": {
+          "primary": "your-provider/your-model",
+          "fallbacks": ["fallback-provider/fallback-model"]
+        },
+        "heartbeat": { "every": "100m" },
+        "subagents": { "allowAgents": ["*"] }
+      },
+      {
+        "id": "linus",
+        "workspace": "/path/to/your/workspace",
+        "agentDir": "workspace-linus",
+        "model": {
+          "primary": "your-provider/your-model",
+          "fallbacks": ["fallback-provider/fallback-model"]
+        },
+        "heartbeat": { "every": "95m" },
+        "subagents": { "allowAgents": ["*"] }
+      },
+      {
+        "id": "skeptic",
+        "workspace": "/path/to/your/workspace",
+        "agentDir": "workspace-skeptic",
+        "model": {
+          "primary": "your-provider/your-model",
+          "fallbacks": ["fallback-provider/fallback-model"]
+        },
+        "heartbeat": { "every": "110m" },
+        "subagents": { "allowAgents": ["*"] }
+      },
+      {
+        "id": "visualizer",
+        "workspace": "/path/to/your/workspace",
+        "agentDir": "workspace-visualizer",
+        "model": {
+          "primary": "your-provider/your-model",
+          "fallbacks": ["fallback-provider/fallback-model"]
+        },
+        "heartbeat": { "every": "120m" },
+        "subagents": { "allowAgents": ["*"] }
+      }
+    ]
+  },
+
+  "models": {
+    "providers": {
+      "your-provider": {
+        "baseUrl": "https://api.your-provider.com/v1",
+        "apiKey": "YOUR_API_KEY_HERE",
+        "models": [
+          {
+            "id": "your-model",
+            "capabilities": {
+              "reasoning": true,
+              "input": ["text"],
+              "contextWindow": 128000,
+              "maxTokens": 8192
+            }
+          }
+        ]
+      }
+    }
+  },
+
+  "telegram": {
+    "_comment": "Configure your Telegram bots here. Each agent needs its own bot token from @BotFather.",
+    "bots": [
+      {
+        "agentId": "coordinator",
+        "token": "YOUR_BOT_TOKEN_HERE",
+        "dmPolicy": "allowlist",
+        "groupPolicy": "open",
+        "allowedUsers": ["YOUR_TELEGRAM_USER_ID"]
+      }
+    ],
+    "groups": []
+  },
+
+  "session": {
+    "memorySearch": {
+      "_comment": "Configure your embedding provider for memory search",
+      "provider": "your-embedding-provider",
+      "model": "your-embedding-model"
+    }
+  }
+}

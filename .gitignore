@@ -1,0 +1,27 @@
+# Secrets
+.env
+*.key
+*credentials*
+*secret*
+
+# Data (users bring their own)
+*.parquet
+*.csv
+!examples/**/*.csv
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Output
+output/
