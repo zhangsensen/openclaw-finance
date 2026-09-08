@@ -16,7 +16,7 @@
 
 ---
 
-> **Production-tested.** This framework powers a 7-agent system running 24/7 on Telegram, handling real financial research across US and A-share markets.
+> This framework has been used in a 7-agent Telegram workflow for US and A-share financial research. Verify the current runtime status before relying on it operationally.
 
 Clone. Configure API keys. Run. 4 specialized agents collaborate on financial research with built-in quality control — no single agent can match what a team delivers.
 
